@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
 
 :root {
-    --primary: #f5c518; /* IMDb Yellow */
+    --primary: #f5c518;
     --bg-dark: #0f1111;
     --card-bg: rgba(255, 255, 255, 0.05);
     --text-main: #ffffff;
@@ -30,7 +30,7 @@ body {
 
 .container {
     width: 100%;
-    max-width: 450px;
+    max-width: 550px;
 }
 
 .card {
@@ -40,11 +40,6 @@ body {
     border-radius: 24px;
     padding: 40px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    transition: transform 0.3s ease;
-}
-
-.card:hover {
-    transform: translateY(-5px);
 }
 
 h1 {
@@ -57,43 +52,48 @@ h1 {
     -webkit-text-fill-color: transparent;
 }
 
-p.subtitle {
+.subtitle {
     text-align: center;
     color: var(--text-muted);
     font-size: 0.9rem;
     margin-bottom: 32px;
 }
 
-.form-group {
+/* Form Styles */
+.form-row {
     margin-bottom: 20px;
 }
+.flex { display: flex; gap: 15px; }
+.flex-1 { flex: 1; }
 
 label {
     display: block;
     margin-bottom: 8px;
     font-weight: 600;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 1px;
 }
 
-input {
+input, select {
     width: 100%;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--glass-border);
     border-radius: 12px;
-    padding: 14px 16px;
+    padding: 12px 14px;
     color: white;
-    font-size: 1rem;
+    font-size: 0.95rem;
     transition: all 0.3s ease;
 }
 
-input:focus {
+select { cursor: pointer; }
+select option { background: #1a1a1a; }
+
+input:focus, select:focus {
     outline: none;
     border-color: var(--primary);
     background: rgba(255, 255, 255, 0.07);
-    box-shadow: 0 0 15px rgba(245, 197, 24, 0.2);
 }
 
 .predict-btn {
@@ -104,7 +104,6 @@ input:focus {
     padding: 16px;
     color: #000;
     font-weight: 800;
-    font-size: 1rem;
     cursor: pointer;
     transition: all 0.3s ease;
     text-transform: uppercase;
@@ -117,50 +116,109 @@ input:focus {
     transform: scale(1.02);
 }
 
-.predict-btn:active {
-    transform: scale(0.98);
+/* Movie Result Card */
+.movie-result-card {
+    display: none;
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    overflow: hidden;
+    flex-direction: row;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.result-container {
-    margin-top: 32px;
-    padding-top: 24px;
-    border-top: 1px solid var(--glass-border);
-    text-align: center;
-    display: none; /* Hidden by default */
+.movie-result-card.show {
+    display: flex;
 }
 
-.result-container.show {
-    display: block;
-    animation: fadeIn 0.5s ease-out;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(40px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-.result-label {
+.poster-section {
+    position: relative;
+    width: 180px;
+    flex-shrink: 0;
+}
+
+.poster-section img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.rating-badge {
+    position: absolute;
+    top: 15px;
+    right: -15px;
+    background: var(--accent);
+    color: #000;
+    padding: 8px 12px;
+    font-weight: 800;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.details-section {
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.details-section h2 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 5px;
+}
+
+.meta-info {
     color: var(--text-muted);
     font-size: 0.9rem;
-    margin-bottom: 4px;
+    margin-bottom: 20px;
 }
 
-.result-value {
-    font-size: 2.5rem;
-    font-weight: 800;
-    color: var(--primary);
+.description {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #ddd;
+    margin-bottom: 25px;
 }
 
-.error-message {
-    color: #ff4d4d;
-    font-size: 0.8rem;
-    margin-top: 4px;
-    display: none;
+.card-footer {
+    display: flex;
+    gap: 10px;
 }
 
-/* Responsive adjustments */
-@media (max-width: 480px) {
-    .card {
-        padding: 24px;
-    }
+.view-details-btn, .back-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.view-details-btn {
+    background: var(--primary);
+    border: none;
+    color: #000;
+}
+
+.back-btn {
+    background: transparent;
+    border: 1px solid var(--glass-border);
+    color: var(--text-main);
+}
+
+.view-details-btn:hover { background: #ffd700; transform: translateY(-2px); }
+.back-btn:hover { background: rgba(255,255,255,0.05); }
+
+@media (max-width: 600px) {
+    .movie-result-card { flex-direction: column; }
+    .poster-section { width: 100%; height: 250px; }
+    .rating-badge { right: 20px; top: 20px; }
 }

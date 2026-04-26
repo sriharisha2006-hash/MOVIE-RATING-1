@@ -23,24 +23,29 @@ def home():
 @app.route('/predict', methods=['POST'])
 def predict():
     if model is None:
-        return jsonify({'success': False, 'error': 'Model not found. Please run model.py first.'}), 500
+        return jsonify({'success': False, 'error': 'Model not found.'}), 500
     
     try:
-        # Get data from form (Fetch API uses x-www-form-urlencoded here)
-        budget = float(request.form.get('budget'))
-        duration = float(request.form.get('duration'))
+        # Get metadata
+        name = request.form.get('name', 'Unknown Movie')
+        genre = request.form.get('genre', 'General')
+        year = request.form.get('year', '2024')
         
-        # Prepare input for model
+        # Get numeric features for ML model
+        budget = float(request.form.get('budget', 0))
+        duration = float(request.form.get('duration', 0))
+        
+        # Predict Rating
         input_features = np.array([[budget, duration]])
-        
-        # Predict
         prediction = model.predict(input_features)[0]
-        
-        # Clamp prediction between 0 and 10 and round to 1 decimal
         rating = round(min(max(prediction, 1.0), 10.0), 1)
         
         return jsonify({
             'success': True,
+            'name': name,
+            'genre': genre,
+            'year': year,
+            'duration': duration,
             'rating': f"{rating:.1f}"
         })
         
@@ -48,6 +53,5 @@ def predict():
         return jsonify({'success': False, 'error': str(e)}), 400
 
 if __name__ == "__main__":
-    # Use host 0.0.0.0 and port 10000 for Render compatibility as requested
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port, debug=True)

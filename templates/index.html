@@ -3,96 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎬 Movie Rating Predictor</title>
+    <title>🎬 Movie Rating Predictor Pro</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="container">
-        <div class="card">
+        <div class="card" id="input-card">
             <h1>🎬 Movie Predictor</h1>
             <p class="subtitle">Predict IMDb ratings using Machine Learning</p>
             
             <form id="prediction-form">
-                <div class="form-group">
-                    <label for="budget">Budget (in Million USD)</label>
-                    <input type="number" id="budget" name="budget" placeholder="e.g. 150" step="0.1" required>
-                    <div id="budget-error" class="error-message">Please enter a valid budget</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">Movie Name</label>
+                        <input type="text" id="name" name="name" placeholder="e.g. Inception" required>
+                    </div>
+                </div>
+
+                <div class="form-row flex">
+                    <div class="form-group flex-1">
+                        <label for="genre">Genre</label>
+                        <select id="genre" name="genre" required>
+                            <option value="Action">Action</option>
+                            <option value="Drama">Drama</option>
+                            <option value="Sci-Fi">Sci-Fi</option>
+                            <option value="Comedy">Comedy</option>
+                            <option value="Horror">Horror</option>
+                            <option value="Romance">Romance</option>
+                        </select>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label for="year">Release Year</label>
+                        <input type="number" id="year" name="year" placeholder="2024" value="2024" required>
+                    </div>
                 </div>
                 
-                <div class="form-group">
-                    <label for="duration">Duration (in Minutes)</label>
-                    <input type="number" id="duration" name="duration" placeholder="e.g. 120" step="1" required>
-                    <div id="duration-error" class="error-message">Please enter a valid duration</div>
+                <div class="form-row flex">
+                    <div class="form-group flex-1">
+                        <label for="budget">Budget (Million $)</label>
+                        <input type="number" id="budget" name="budget" placeholder="150" step="0.1" required>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label for="duration">Duration (Min)</label>
+                        <input type="number" id="duration" name="duration" placeholder="120" step="1" required>
+                    </div>
                 </div>
                 
                 <button type="submit" class="predict-btn" id="predict-btn">Predict Rating</button>
             </form>
-            
-            <div id="result-container" class="result-container">
-                <p class="result-label">Predicted Rating</p>
-                <div id="result-value" class="result-value">-.--</div>
+        </div>
+
+        <!-- Movie Result Card -->
+        <div class="movie-result-card" id="result-card">
+            <div class="poster-section">
+                <img src="{{ url_for('static', filename='poster_placeholder.png') }}" alt="Movie Poster" id="res-poster">
+                <div class="rating-badge" id="res-rating">8.5</div>
+            </div>
+            <div class="details-section">
+                <h2 id="res-name">Movie Name</h2>
+                <div class="meta-info">
+                    <span id="res-genre">Genre</span> • <span id="res-year">2024</span>
+                </div>
+                <p class="description">This movie is predicted to be a high-budget <span id="res-genre-text">Sci-Fi</span> experience with a runtime of <span id="res-duration">120</span> minutes.</p>
+                <div class="card-footer">
+                    <button class="view-details-btn">View Details</button>
+                    <button class="back-btn" onclick="resetForm()">New Prediction</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        document.getElementById('prediction-form').addEventListener('submit', async (e) => {
+        const predictionForm = document.getElementById('prediction-form');
+        const inputCard = document.getElementById('input-card');
+        const resultCard = document.getElementById('result-card');
+
+        predictionForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // Reset UI
-            const resultContainer = document.getElementById('result-container');
-            const resultValue = document.getElementById('result-value');
             const predictBtn = document.getElementById('predict-btn');
+            const formData = new FormData(predictionForm);
             
-            resultContainer.classList.remove('show');
-            
-            const budget = document.getElementById('budget').value;
-            const duration = document.getElementById('duration').value;
-            
-            // Basic Validation
-            if (!budget || budget <= 0) {
-                document.getElementById('budget-error').style.display = 'block';
-                return;
-            } else {
-                document.getElementById('budget-error').style.display = 'none';
-            }
-            
-            if (!duration || duration <= 0) {
-                document.getElementById('duration-error').style.display = 'block';
-                return;
-            } else {
-                document.getElementById('duration-error').style.display = 'none';
-            }
-            
-            // Button loading state
             predictBtn.innerText = 'Calculating...';
             predictBtn.disabled = true;
             
             try {
                 const response = await fetch('/predict', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `budget=${budget}&duration=${duration}`
+                    body: new URLSearchParams(formData)
                 });
                 
                 const data = await response.json();
                 
                 if (data.success) {
-                    resultValue.innerText = data.rating;
-                    resultContainer.classList.add('show');
+                    // Update result card
+                    document.getElementById('res-name').innerText = data.name;
+                    document.getElementById('res-genre').innerText = data.genre;
+                    document.getElementById('res-genre-text').innerText = data.genre;
+                    document.getElementById('res-year').innerText = data.year;
+                    document.getElementById('res-rating').innerText = data.rating;
+                    document.getElementById('res-duration').innerText = data.duration;
+                    
+                    // Show result card
+                    inputCard.style.display = 'none';
+                    resultCard.classList.add('show');
                 } else {
                     alert('Error: ' + data.error);
                 }
             } catch (err) {
-                console.error('Fetch error:', err);
-                alert('Connection error. Please try again.');
+                console.error(err);
+                alert('Connection error.');
             } finally {
                 predictBtn.innerText = 'Predict Rating';
                 predictBtn.disabled = false;
             }
         });
+
+        function resetForm() {
+            resultCard.classList.remove('show');
+            setTimeout(() => {
+                inputCard.style.display = 'block';
+                predictionForm.reset();
+            }, 300);
+        }
     </script>
 </body>
 </html>
